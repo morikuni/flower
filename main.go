@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"runtime"
 	"time"
 
 	"github.com/morikuni/worker/actor"
@@ -30,8 +29,6 @@ type Greet struct {
 	msg string
 }
 
-type Stop struct{}
-
 type Crash struct{}
 
 type Check struct {
@@ -49,34 +46,29 @@ func (ca *CountActor) Init() {
 func (ca *CountActor) Receive(self actor.Actor, msg interface{}) {
 	switch msg := msg.(type) {
 	case Greet:
+		fmt.Println(msg.msg)
 		ca.c++
 	case Check:
 		msg.c <- ca.c
-	case Stop:
-		self.Stop()
 	case Crash:
 		panic("Crashshs")
 	}
 }
 
 func main() {
-	fmt.Println(runtime.NumGoroutine())
 	supervisor := actor.NewSupervisor()
 	actor := supervisor.ActorOf(&CountActor{}, "counter")
 	c := make(chan int)
 	actor.Send(Check{c})
 	fmt.Println("count", <-c)
-	actor.Send(Greet{"Hello"})
-	actor.Send(Greet{"Hello"})
+	actor.Send(Greet{"Hello1"})
+	actor.Send(Greet{"Hello2"})
 	actor.Send(Check{c})
 	fmt.Println("count", <-c)
-	fmt.Println(runtime.NumGoroutine())
 	actor.Send(Crash{})
-	actor.Send(Greet{"Hello"})
+	actor.Send(Greet{"Hello3"})
 	actor.Send(Check{c})
 	fmt.Println("count", <-c)
-	fmt.Println(runtime.NumGoroutine())
-	actor.Send(Stop{})
+	supervisor.Shutdown()
 	time.Sleep(time.Second * 1)
-	fmt.Println(runtime.NumGoroutine())
 }

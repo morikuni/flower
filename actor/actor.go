@@ -6,36 +6,28 @@ type Receiver interface {
 }
 
 type Actor interface {
-	Supervisor
+	Name() string
 	Send(msg interface{})
-	Stop()
 
 	init()
 	start()
+	stop()
+	receive(msg interface{})
 }
 
 type actor struct {
-	name       string
-	receiver   Receiver
-	parent     Supervisor
-	supervisor Supervisor
-	msgChan    chan interface{}
+	name     string
+	receiver Receiver
+	parent   Supervisor
+	msgChan  chan interface{}
 }
 
 func (actor *actor) Send(msg interface{}) {
 	actor.msgChan <- msg
 }
 
-func (actor *actor) Stop() {
+func (actor *actor) stop() {
 	close(actor.msgChan)
-}
-
-func (actor *actor) ActorOf(receiver Receiver, name string) Actor {
-	return actor.supervisor.ActorOf(receiver, name)
-}
-
-func (actor *actor) onCrashChild(child *actor, err interface{}) {
-	actor.supervisor.onCrashChild(child, err)
 }
 
 func (actor *actor) init() {
@@ -47,23 +39,30 @@ func (actor *actor) start() {
 		defer func() {
 			err := recover()
 			if err != nil {
-				actor.parent.onCrashChild(actor, err)
+				actor.parent.Send(paniced{actor})
 			}
 		}()
 
 		for msg := range actor.msgChan {
-			actor.receiver.Receive(actor, msg)
+			actor.receive(msg)
 		}
 	}()
+}
+
+func (actor *actor) receive(msg interface{}) {
+	actor.receiver.Receive(actor, msg)
+}
+
+func (actor *actor) Name() string {
+	return actor.name
 }
 
 func newActor(name string, parent Supervisor, receiver Receiver) *actor {
 	c := make(chan interface{})
 	return &actor{
-		name:       name,
-		receiver:   receiver,
-		parent:     parent,
-		supervisor: &supervisor{},
-		msgChan:    c,
+		name:     name,
+		receiver: receiver,
+		parent:   parent,
+		msgChan:  c,
 	}
 }
