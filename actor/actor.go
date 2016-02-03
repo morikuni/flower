@@ -1,6 +1,6 @@
 package actor
 
-type Receiver interface {
+type Behavior interface {
 	Init()
 	Receive(self Actor, msg interface{})
 }
@@ -17,7 +17,7 @@ type Actor interface {
 
 type actor struct {
 	name     string
-	receiver Receiver
+	behavior Behavior
 	parent   Supervisor
 	msgChan  chan interface{}
 }
@@ -31,7 +31,7 @@ func (actor *actor) stop() {
 }
 
 func (actor *actor) init() {
-	actor.receiver.Init()
+	actor.behavior.Init()
 }
 
 func (actor *actor) start() {
@@ -50,18 +50,18 @@ func (actor *actor) start() {
 }
 
 func (actor *actor) receive(msg interface{}) {
-	actor.receiver.Receive(actor, msg)
+	actor.behavior.Receive(actor, msg)
 }
 
 func (actor *actor) Name() string {
 	return actor.name
 }
 
-func newActor(name string, parent Supervisor, receiver Receiver) *actor {
+func newActor(name string, parent Supervisor, behavior Behavior) *actor {
 	c := make(chan interface{})
 	return &actor{
 		name:     name,
-		receiver: receiver,
+		behavior: behavior,
 		parent:   parent,
 		msgChan:  c,
 	}

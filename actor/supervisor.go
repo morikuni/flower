@@ -10,7 +10,7 @@ type paniced struct {
 
 type createRequest struct {
 	name     string
-	receiver Receiver
+	behavior Behavior
 	c        chan Actor
 }
 
@@ -18,7 +18,7 @@ type shutdown struct{}
 
 type Supervisor interface {
 	Actor
-	ActorOf(Receiver, string) Actor
+	ActorOf(Behavior, string) Actor
 	Shutdown()
 }
 
@@ -27,11 +27,11 @@ type supervisor struct {
 	children []Actor
 }
 
-func (sv *supervisor) ActorOf(receiver Receiver, name string) Actor {
+func (sv *supervisor) ActorOf(behavior Behavior, name string) Actor {
 	c := make(chan Actor)
 	sv.Send(createRequest{
 		name:     name,
-		receiver: receiver,
+		behavior: behavior,
 		c:        c,
 	})
 	return <-c
@@ -51,7 +51,7 @@ func (sv *supervisor) Receive(_ Actor, msg interface{}) {
 		msg.actor.init()
 		msg.actor.start()
 	case createRequest:
-		a := newActor(msg.name, sv, msg.receiver)
+		a := newActor(msg.name, sv, msg.behavior)
 		a.init()
 		a.start()
 		sv.children = append(sv.children, a)

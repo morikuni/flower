@@ -12,7 +12,7 @@ type guardian struct {
 	msgChan chan interface{}
 }
 
-func (g *guardian) ActorOf(receiver Receiver, name string) Actor {
+func (g *guardian) ActorOf(_ Behavior, _ string) Actor {
 	return nil
 }
 
