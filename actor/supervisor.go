@@ -66,9 +66,9 @@ func (sv *supervisor) Receive(_ Actor, msg interface{}) {
 	}
 }
 
-func NewSupervisor() Supervisor {
+func NewSupervisor(name string) Supervisor {
 	sv := &supervisor{}
-	sv.Actor = newActor("supervisor", _guardian, sv)
+	sv.Actor = newActor(name, _guardian, sv)
 	sv.start()
 	return sv
 }
