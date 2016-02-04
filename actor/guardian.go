@@ -49,5 +49,5 @@ func (g *guardian) receive(msg interface{}) {
 }
 
 func (g *guardian) Name() string {
-	return "Guardian"
+	return ""
 }

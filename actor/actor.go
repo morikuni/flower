@@ -60,7 +60,7 @@ func (actor *actor) Name() string {
 func newActor(name string, parent Supervisor, behavior Behavior) *actor {
 	c := make(chan interface{})
 	return &actor{
-		name:     name,
+		name:     parent.Name() + "/" + name,
 		behavior: behavior,
 		parent:   parent,
 		msgChan:  c,
