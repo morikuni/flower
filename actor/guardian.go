@@ -45,6 +45,6 @@ func (g *guardian) receive(msg interface{}) {
 	log.Println("Guardian received:", msg)
 }
 
-func (g *guardian) Name() string {
-	return ""
+func (g *guardian) Path() Path {
+	return rootPath
 }

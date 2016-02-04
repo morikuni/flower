@@ -47,7 +47,7 @@ func (sv *supervisor) Init() {
 func (sv *supervisor) Receive(_ Actor, msg interface{}) {
 	switch msg := msg.(type) {
 	case paniced:
-		log.Println(msg.actor.Name(), "paniced")
+		log.Println(msg.actor.Path(), "paniced")
 		msg.actor.init()
 		msg.actor.start()
 	case createRequest:

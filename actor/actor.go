@@ -6,7 +6,7 @@ type Behavior interface {
 }
 
 type Actor interface {
-	Name() string
+	Path() Path
 	Send() chan<- interface{}
 
 	init()
@@ -16,7 +16,7 @@ type Actor interface {
 }
 
 type actor struct {
-	name     string
+	path     Path
 	behavior Behavior
 	parent   Supervisor
 	msgChan  chan interface{}
@@ -53,14 +53,14 @@ func (actor *actor) receive(msg interface{}) {
 	actor.behavior.Receive(actor, msg)
 }
 
-func (actor *actor) Name() string {
-	return actor.name
+func (actor *actor) Path() Path {
+	return actor.path
 }
 
 func newActor(name string, parent Supervisor, behavior Behavior) *actor {
 	c := make(chan interface{})
 	return &actor{
-		name:     parent.Name() + "/" + name,
+		path:     parent.Path().join(name),
 		behavior: behavior,
 		parent:   parent,
 		msgChan:  c,
