@@ -32,10 +32,7 @@ func (g *guardian) init() {
 func (g *guardian) start() {
 	go func() {
 		defer func() {
-			err := recover()
-			if err != nil {
-				panic("Guardian error: dead")
-			}
+			panic("Guardian error: dead")
 		}()
 
 		for msg := range g.msgChan {
