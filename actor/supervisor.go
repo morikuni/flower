@@ -29,16 +29,16 @@ type supervisor struct {
 
 func (sv *supervisor) ActorOf(behavior Behavior, name string) Actor {
 	c := make(chan Actor)
-	sv.Send(createRequest{
+	sv.Send() <- createRequest{
 		name:     name,
 		behavior: behavior,
 		c:        c,
-	})
+	}
 	return <-c
 }
 
 func (sv *supervisor) Shutdown() {
-	sv.Send(shutdown{})
+	sv.Send() <- shutdown{}
 }
 
 func (sv *supervisor) Init() {

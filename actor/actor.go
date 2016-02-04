@@ -7,7 +7,7 @@ type Behavior interface {
 
 type Actor interface {
 	Name() string
-	Send(msg interface{})
+	Send() chan<- interface{}
 
 	init()
 	start()
@@ -22,8 +22,8 @@ type actor struct {
 	msgChan  chan interface{}
 }
 
-func (actor *actor) Send(msg interface{}) {
-	actor.msgChan <- msg
+func (actor *actor) Send() chan<- interface{} {
+	return actor.msgChan
 }
 
 func (actor *actor) stop() {
@@ -39,7 +39,7 @@ func (actor *actor) start() {
 		defer func() {
 			err := recover()
 			if err != nil {
-				actor.parent.Send(paniced{actor})
+				actor.parent.Send() <- paniced{actor}
 			}
 		}()
 

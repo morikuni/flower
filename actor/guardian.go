@@ -19,8 +19,8 @@ func (g *guardian) ActorOf(_ Behavior, _ string) Actor {
 func (g *guardian) Shutdown() {
 }
 
-func (g *guardian) Send(msg interface{}) {
-	g.msgChan <- msg
+func (g *guardian) Send() chan<- interface{} {
+	return g.msgChan
 }
 
 func (g *guardian) stop() {
