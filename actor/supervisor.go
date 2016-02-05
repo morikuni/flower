@@ -4,54 +4,29 @@ import (
 	"log"
 )
 
-type paniced struct {
-	actor  Actor
-	reason interface{}
-}
-
-type superviseMe struct {
-	actor Actor
-}
-
-type Supervisor interface {
-	Supervise(Actor)
-	Children() []Actor
-}
-
 type supervisor struct {
-	Actor
-	onPanic  func(Supervisor, Actor)
-	children []Actor
-}
-
-func (sv *supervisor) Supervise(target Actor) {
-	sv.Send() <- superviseMe{target}
-}
-
-func (sv *supervisor) Children() []Actor {
-	return sv.children
+	handlePanic func(*supervisor, Actor)
+	children    []Actor
 }
 
 func (sv *supervisor) Init() {
 }
 
-func (sv *supervisor) Receive(_ Actor, msg interface{}) {
+func (sv *supervisor) Receive(self Actor, msg interface{}) {
 	switch msg := msg.(type) {
-	case paniced:
-		log.Println(msg.actor.Path(), "paniced")
-		sv.onPanic(sv, msg.actor)
-	case superviseMe:
-		sv.children = append(sv.children, msg.actor)
-		sv.Monitor(msg.actor)
+	case Panic:
+		log.Println(msg.Actor.Path(), "paniced")
+		sv.handlePanic(sv, msg.Actor)
+	case Supervise:
+		sv.children = append(sv.children, msg.Actor)
+		self.Monitor(msg.Actor)
 	default:
 		panic("Supervisor error: received unexpected message")
 	}
 }
 
-func NewSupervisor(name string, strategy SupervisorStrategy, sys ActorSystem) Supervisor {
-	sv := &supervisor{
-		onPanic: strategy.onPanic,
+func NewSupervisor(strategy SupervisorStrategy) Behavior {
+	return &supervisor{
+		handlePanic: strategy.handlePanic,
 	}
-	sv.Actor = sys.ActorOf(name, sv)
-	return sv
 }

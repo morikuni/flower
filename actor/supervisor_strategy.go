@@ -1,21 +1,21 @@
 package actor
 
 type SupervisorStrategy struct {
-	onPanic func(self Supervisor, target Actor)
+	handlePanic func(self *supervisor, target Actor)
 }
 
-func oneForOne(_ Supervisor, target Actor) {
+func oneForOne(_ *supervisor, target Actor) {
 	target.stop()
 	target.init()
 	target.start()
 }
 
 var OneForOneStrategy = SupervisorStrategy{
-	onPanic: oneForOne,
+	handlePanic: oneForOne,
 }
 
-func allForOne(sv Supervisor, target Actor) {
-	for _, a := range sv.Children() {
+func allForOne(sv *supervisor, target Actor) {
+	for _, a := range sv.children {
 		a.stop()
 		a.init()
 		a.start()
@@ -23,5 +23,5 @@ func allForOne(sv Supervisor, target Actor) {
 }
 
 var AllForOneStrategy = SupervisorStrategy{
-	onPanic: allForOne,
+	handlePanic: allForOne,
 }

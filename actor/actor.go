@@ -56,9 +56,9 @@ func (actor *actor) start() {
 		defer func() {
 			err := recover()
 			if err != nil {
-				p := paniced{
-					actor:  actor,
-					reason: err,
+				p := Panic{
+					Actor:  actor,
+					Reason: err,
 				}
 
 				for _, m := range actor.monitors {
