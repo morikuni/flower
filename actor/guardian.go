@@ -4,8 +4,13 @@ import (
 	"log"
 )
 
-var _guardian Supervisor = &guardian{
-	msgChan: make(chan interface{}),
+var _guardian *guardian
+
+func init() {
+	_guardian = &guardian{
+		msgChan: make(chan interface{}),
+	}
+	_guardian.start()
 }
 
 type guardian struct {
@@ -19,8 +24,15 @@ func (g *guardian) ActorOf(_ Behavior, _ string) Actor {
 func (g *guardian) Shutdown() {
 }
 
+func (g *guardian) Path() Path {
+	return rootPath
+}
+
 func (g *guardian) Send() chan<- interface{} {
 	return g.msgChan
+}
+
+func (g *guardian) Monitor(_ Actor) {
 }
 
 func (g *guardian) stop() {
@@ -43,8 +55,4 @@ func (g *guardian) start() {
 
 func (g *guardian) receive(msg interface{}) {
 	log.Println("Guardian received:", msg)
-}
-
-func (g *guardian) Path() Path {
-	return rootPath
 }

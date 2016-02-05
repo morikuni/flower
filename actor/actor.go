@@ -8,6 +8,7 @@ type Behavior interface {
 type Actor interface {
 	Path() Path
 	Send() chan<- interface{}
+	Monitor(Actor)
 
 	init()
 	start()
@@ -15,15 +16,27 @@ type Actor interface {
 	receive(msg interface{})
 }
 
+type notifyMe struct {
+	actor Actor
+}
+
 type actor struct {
 	path     Path
 	behavior Behavior
-	parent   Supervisor
+	monitors []Actor
 	msgChan  chan interface{}
+}
+
+func (actor *actor) Path() Path {
+	return actor.path
 }
 
 func (actor *actor) Send() chan<- interface{} {
 	return actor.msgChan
+}
+
+func (actor *actor) Monitor(target Actor) {
+	target.Send() <- notifyMe{actor}
 }
 
 func (actor *actor) stop() {
@@ -39,7 +52,9 @@ func (actor *actor) start() {
 		defer func() {
 			err := recover()
 			if err != nil {
-				actor.parent.Send() <- paniced{actor}
+				for _, m := range actor.monitors {
+					m.Send() <- paniced{actor}
+				}
 			}
 		}()
 
@@ -50,19 +65,19 @@ func (actor *actor) start() {
 }
 
 func (actor *actor) receive(msg interface{}) {
+	if req, ok := msg.(notifyMe); ok {
+		actor.monitors = append(actor.monitors, req.actor)
+		return
+	}
 	actor.behavior.Receive(actor, msg)
 }
 
-func (actor *actor) Path() Path {
-	return actor.path
-}
-
-func newActor(name string, parent Supervisor, behavior Behavior) *actor {
+func newActor(name string, parent Actor, behavior Behavior) *actor {
 	c := make(chan interface{})
 	return &actor{
 		path:     parent.Path().join(name),
 		behavior: behavior,
-		parent:   parent,
+		monitors: []Actor{},
 		msgChan:  c,
 	}
 }

@@ -17,7 +17,6 @@ type createRequest struct {
 type shutdown struct{}
 
 type Supervisor interface {
-	Actor
 	ActorOf(Behavior, string) Actor
 	Shutdown()
 }
@@ -34,7 +33,9 @@ func (sv *supervisor) ActorOf(behavior Behavior, name string) Actor {
 		behavior: behavior,
 		c:        c,
 	}
-	return <-c
+	a := <-c
+	sv.Monitor(a)
+	return a
 }
 
 func (sv *supervisor) Shutdown() {
