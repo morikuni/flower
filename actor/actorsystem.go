@@ -10,7 +10,7 @@ type shutdown struct{}
 
 type ActorSystem interface {
 	Path() Path
-	ActorOf(Behavior, string) Actor
+	ActorOf(string, Behavior) Actor
 	Shutdown()
 }
 
@@ -19,7 +19,7 @@ type actorSystem struct {
 	actors []Actor
 }
 
-func (sys *actorSystem) ActorOf(behavior Behavior, name string) Actor {
+func (sys *actorSystem) ActorOf(name string, behavior Behavior) Actor {
 	c := make(chan Actor)
 	sys.Send() <- createRequest{
 		name:     name,
@@ -40,9 +40,7 @@ func (sys *actorSystem) Init() {
 func (sys *actorSystem) Receive(_ Actor, msg interface{}) {
 	switch msg := msg.(type) {
 	case createRequest:
-		a := newActor(msg.name, sys, msg.behavior)
-		a.init()
-		a.start()
+		a := newActor(msg.name, msg.behavior, sys)
 		sys.actors = append(sys.actors, a)
 		msg.c <- a
 	case shutdown:
@@ -58,9 +56,7 @@ func (sys *actorSystem) Receive(_ Actor, msg interface{}) {
 
 func NewActorSystem(name string) ActorSystem {
 	sys := &actorSystem{}
-	sys.Actor = newActor(name, _guardian, sys)
-	sys.init()
-	sys.start()
+	sys.Actor = _guardian.ActorOf(name, sys)
 	_guardian.Monitor(sys)
 	return sys
 }

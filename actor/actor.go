@@ -87,8 +87,8 @@ func (actor *actor) receive(msg interface{}) {
 	actor.behavior.Receive(actor, msg)
 }
 
-func newActor(name string, sys ActorSystem, behavior Behavior) *actor {
-	return &actor{
+func newActor(name string, behavior Behavior, sys ActorSystem) *actor {
+	a := &actor{
 		path:     sys.Path().join(name),
 		behavior: behavior,
 		sys:      sys,
@@ -96,4 +96,7 @@ func newActor(name string, sys ActorSystem, behavior Behavior) *actor {
 		msgChan:  make(chan interface{}),
 		stopChan: make(chan struct{}),
 	}
+	a.init()
+	a.start()
+	return a
 }

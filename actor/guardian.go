@@ -17,8 +17,8 @@ type guardian struct {
 	msgChan chan interface{}
 }
 
-func (g *guardian) ActorOf(_ Behavior, _ string) Actor {
-	return nil
+func (g *guardian) ActorOf(name string, behavior Behavior) Actor {
+	return newActor(name, behavior, g)
 }
 
 func (g *guardian) Shutdown() {
