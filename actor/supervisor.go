@@ -53,6 +53,5 @@ func NewSupervisor(name string, strategy SupervisorStrategy, sys ActorSystem) Su
 		onPanic: strategy.onPanic,
 	}
 	sv.Actor = sys.ActorOf(name, sv)
-	sv.start()
 	return sv
 }
