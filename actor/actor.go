@@ -23,8 +23,10 @@ type notifyMe struct {
 type actor struct {
 	path     Path
 	behavior Behavior
+	sys      ActorSystem
 	monitors []Actor
 	msgChan  chan interface{}
+	stopChan chan struct{}
 }
 
 func (actor *actor) Path() Path {
@@ -40,7 +42,10 @@ func (actor *actor) Monitor(target Actor) {
 }
 
 func (actor *actor) stop() {
-	close(actor.msgChan)
+	select {
+	case actor.stopChan <- struct{}{}:
+	default: // default means the Actor has already stopped.
+	}
 }
 
 func (actor *actor) init() {
@@ -52,14 +57,24 @@ func (actor *actor) start() {
 		defer func() {
 			err := recover()
 			if err != nil {
+				p := paniced{
+					actor:  actor,
+					reason: err,
+				}
+
 				for _, m := range actor.monitors {
-					m.Send() <- paniced{actor}
+					m.Send() <- p
 				}
 			}
 		}()
 
-		for msg := range actor.msgChan {
-			actor.receive(msg)
+		for {
+			select {
+			case msg := <-actor.msgChan:
+				actor.receive(msg)
+			case <-actor.stopChan:
+				break
+			}
 		}
 	}()
 }
@@ -72,12 +87,13 @@ func (actor *actor) receive(msg interface{}) {
 	actor.behavior.Receive(actor, msg)
 }
 
-func newActor(name string, parent Actor, behavior Behavior) *actor {
-	c := make(chan interface{})
+func newActor(name string, sys ActorSystem, behavior Behavior) *actor {
 	return &actor{
-		path:     parent.Path().join(name),
+		path:     sys.Path().join(name),
 		behavior: behavior,
+		sys:      sys,
 		monitors: []Actor{},
-		msgChan:  c,
+		msgChan:  make(chan interface{}),
+		stopChan: make(chan struct{}),
 	}
 }

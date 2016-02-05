@@ -32,7 +32,8 @@ func (g *guardian) Send() chan<- interface{} {
 	return g.msgChan
 }
 
-func (g *guardian) Monitor(_ Actor) {
+func (g *guardian) Monitor(actor Actor) {
+	actor.Send() <- notifyMe{g}
 }
 
 func (g *guardian) stop() {
