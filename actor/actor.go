@@ -23,7 +23,6 @@ type notifyMe struct {
 type actor struct {
 	path     Path
 	behavior Behavior
-	sys      ActorSystem
 	monitors []Actor
 	msgChan  chan interface{}
 	stopChan chan struct{}
@@ -87,11 +86,10 @@ func (actor *actor) receive(msg interface{}) {
 	actor.behavior.Receive(actor, msg)
 }
 
-func newActor(name string, behavior Behavior, sys ActorSystem) *actor {
+func newActor(name string, behavior Behavior, path Path) *actor {
 	a := &actor{
-		path:     sys.Path().join(name),
+		path:     path.join(name),
 		behavior: behavior,
-		sys:      sys,
 		monitors: []Actor{},
 		msgChan:  make(chan interface{}),
 		stopChan: make(chan struct{}),

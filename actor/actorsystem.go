@@ -40,7 +40,7 @@ func (sys *actorSystem) Init() {
 func (sys *actorSystem) Receive(_ Actor, msg interface{}) {
 	switch msg := msg.(type) {
 	case createRequest:
-		a := newActor(msg.name, msg.behavior, sys)
+		a := newActor(msg.name, msg.behavior, sys.Path())
 		sys.actors = append(sys.actors, a)
 		msg.c <- a
 	case shutdown:
@@ -57,6 +57,5 @@ func (sys *actorSystem) Receive(_ Actor, msg interface{}) {
 func NewActorSystem(name string) ActorSystem {
 	sys := &actorSystem{}
 	sys.Actor = _guardian.ActorOf(name, sys)
-	_guardian.Monitor(sys)
 	return sys
 }

@@ -18,7 +18,9 @@ type guardian struct {
 }
 
 func (g *guardian) ActorOf(name string, behavior Behavior) Actor {
-	return newActor(name, behavior, g)
+	a := newActor(name, behavior, g.Path())
+	g.Monitor(a)
+	return a
 }
 
 func (g *guardian) Shutdown() {
