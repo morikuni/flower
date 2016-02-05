@@ -60,6 +60,7 @@ func (sv *supervisor) Receive(_ Actor, msg interface{}) {
 		for _, a := range sv.children {
 			a.stop()
 		}
+		sv.children = sv.children[:0]
 		sv.stop()
 	default:
 		panic("Supervisor error: received unexpected message")
