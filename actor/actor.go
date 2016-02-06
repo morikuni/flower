@@ -12,6 +12,7 @@ type Actor interface {
 
 	init()
 	start()
+	restart(reason interface{})
 	stop()
 	receive(msg interface{})
 }
@@ -76,6 +77,11 @@ func (actor *actor) start() {
 			}
 		}
 	}()
+}
+
+func (actor *actor) restart(_ interface{}) {
+	actor.init()
+	actor.start()
 }
 
 func (actor *actor) receive(msg interface{}) {

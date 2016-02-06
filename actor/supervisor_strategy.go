@@ -6,8 +6,7 @@ type SupervisorStrategy struct {
 
 func oneForOne(_ *supervisor, target Actor) {
 	target.stop()
-	target.init()
-	target.start()
+	target.restart()
 }
 
 var OneForOneStrategy = SupervisorStrategy{
@@ -17,8 +16,7 @@ var OneForOneStrategy = SupervisorStrategy{
 func allForOne(sv *supervisor, target Actor) {
 	for _, a := range sv.children {
 		a.stop()
-		a.init()
-		a.start()
+		a.restart()
 	}
 }
 
