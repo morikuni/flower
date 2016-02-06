@@ -10,7 +10,7 @@ type shutdown struct{}
 
 type ActorSystem interface {
 	Path() Path
-	ActorOf(string, Behavior) Actor
+	ActorOf(name string, behavior Behavior) Actor
 	Shutdown()
 }
 

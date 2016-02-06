@@ -6,7 +6,7 @@ type Path interface {
 	fmt.Stringer
 	Name() string
 
-	join(string) Path
+	join(name string) Path
 }
 
 type path struct {

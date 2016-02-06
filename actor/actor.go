@@ -8,7 +8,7 @@ type Behavior interface {
 type Actor interface {
 	Path() Path
 	Send() chan<- interface{}
-	Monitor(Actor)
+	Monitor(target Actor)
 
 	init()
 	start()
