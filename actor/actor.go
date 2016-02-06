@@ -1,5 +1,9 @@
 package actor
 
+import (
+	"sync"
+)
+
 type Behavior interface {
 	Init()
 	Receive(self Actor, msg interface{})
@@ -27,6 +31,9 @@ type actor struct {
 	monitors []Actor
 	msgChan  chan Message
 	stopChan chan struct{}
+
+	mu      sync.Mutex
+	running bool
 }
 
 func (actor *actor) Path() Path {
@@ -42,9 +49,12 @@ func (actor *actor) Monitor(target Actor) {
 }
 
 func (actor *actor) stop() {
-	select {
-	case actor.stopChan <- struct{}{}:
-	default: // default means the Actor has already stopped.
+	actor.mu.Lock()
+	running := actor.running
+	actor.running = false
+	actor.mu.Unlock()
+	if running {
+		actor.stopChan <- struct{}{}
 	}
 }
 
@@ -53,8 +63,18 @@ func (actor *actor) init() {
 }
 
 func (actor *actor) start() {
+	actor.mu.Lock()
+	defer actor.mu.Unlock()
+	if actor.running {
+		return
+	}
+	actor.running = true
 	go func() {
 		defer func() {
+			actor.mu.Lock()
+			actor.running = false
+			actor.mu.Unlock()
+
 			err := recover()
 			if err != nil {
 				p := Panic{
@@ -68,12 +88,13 @@ func (actor *actor) start() {
 			}
 		}()
 
+	LOOP:
 		for {
 			select {
 			case msg := <-actor.msgChan:
 				actor.receive(msg)
 			case <-actor.stopChan:
-				break
+				break LOOP
 			}
 		}
 	}()
