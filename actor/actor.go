@@ -27,11 +27,12 @@ type notifyMe struct {
 }
 
 type actor struct {
-	path     Path
-	behavior Behavior
-	monitors []Actor
-	msgChan  chan Message
-	stopChan chan struct{}
+	path        Path
+	behavior    Behavior
+	monitors    []Actor
+	msgChan     chan Message
+	stopChan    chan struct{}
+	stoppedChan chan struct{}
 
 	mu      sync.Mutex
 	running bool
@@ -52,10 +53,10 @@ func (actor *actor) Monitor(target Actor) {
 func (actor *actor) stop() {
 	actor.mu.Lock()
 	running := actor.running
-	actor.running = false
 	actor.mu.Unlock()
 	if running {
 		actor.stopChan <- struct{}{}
+		<-actor.stoppedChan
 	}
 }
 
@@ -88,16 +89,18 @@ func (actor *actor) start() {
 				for _, m := range actor.monitors {
 					m.Send() <- p
 				}
+			} else {
+				actor.stoppedChan <- struct{}{}
 			}
 		}()
 
 	LOOP:
 		for {
 			select {
-			case msg := <-actor.msgChan:
-				actor.receive(msg)
 			case <-actor.stopChan:
 				break LOOP
+			case msg := <-actor.msgChan:
+				actor.receive(msg)
 			}
 		}
 	}()
@@ -119,11 +122,12 @@ func (actor *actor) receive(msg Message) {
 
 func newActor(name string, behavior Behavior, path Path) *actor {
 	a := &actor{
-		path:     path.join(name),
-		behavior: behavior,
-		monitors: []Actor{},
-		msgChan:  make(chan Message),
-		stopChan: make(chan struct{}),
+		path:        path.join(name),
+		behavior:    behavior,
+		monitors:    []Actor{},
+		msgChan:     make(chan Message),
+		stopChan:    make(chan struct{}),
+		stoppedChan: make(chan struct{}),
 	}
 	a.init()
 	a.start()
