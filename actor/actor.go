@@ -1,6 +1,7 @@
 package actor
 
 import (
+	"github.com/morikuni/flower/log"
 	"sync"
 )
 
@@ -69,11 +70,13 @@ func (actor *actor) start() {
 		return
 	}
 	actor.running = true
+	log.Debug(actor.path, "start")
 	go func() {
 		defer func() {
 			actor.mu.Lock()
 			actor.running = false
 			actor.mu.Unlock()
+			log.Debug(actor.path, "stop")
 
 			err := recover()
 			if err != nil {
@@ -108,6 +111,7 @@ func (actor *actor) restart(_ interface{}) {
 func (actor *actor) receive(msg Message) {
 	if req, ok := msg.(notifyMe); ok {
 		actor.monitors = append(actor.monitors, req.actor)
+		log.Debug(actor.path, "notify events to", req.actor.Path())
 		return
 	}
 	actor.behavior.Receive(actor, msg)

@@ -1,7 +1,7 @@
 package actor
 
 import (
-	"log"
+	"github.com/morikuni/flower/log"
 )
 
 var _guardian *guardian
@@ -60,5 +60,5 @@ func (g *guardian) restart(_ interface{}) {
 }
 
 func (g *guardian) receive(msg Message) {
-	log.Println("Guardian received:", msg)
+	log.Error("Guardian received:", msg)
 }

@@ -37,7 +37,7 @@ func (sys *actorSystem) Shutdown() {
 func (sys *actorSystem) Init() {
 }
 
-func (sys *actorSystem) Receive(_ Actor, msg interface{}) {
+func (sys *actorSystem) Receive(self Actor, msg interface{}) {
 	switch msg := msg.(type) {
 	case createRequest:
 		a := newActor(msg.name, msg.behavior, sys.Path())
@@ -48,7 +48,7 @@ func (sys *actorSystem) Receive(_ Actor, msg interface{}) {
 			a.stop()
 		}
 		sys.actors = sys.actors[:0]
-		sys.stop()
+		go self.stop() // need goroutine to handle stopChan
 	default:
 		panic("ActorSystem error: received unexpected message")
 	}
