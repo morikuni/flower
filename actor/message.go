@@ -1,5 +1,9 @@
 package actor
 
+import (
+	"sync"
+)
+
 type Message interface{}
 
 type Panic struct {
@@ -8,5 +12,6 @@ type Panic struct {
 }
 
 type Supervise struct {
-	Actor Actor
+	*sync.WaitGroup
+	Actors []Actor
 }
