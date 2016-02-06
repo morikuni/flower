@@ -56,6 +56,9 @@ func (g *guardian) start() {
 	}()
 }
 
+func (g *guardian) restart(_ interface{}) {
+}
+
 func (g *guardian) receive(msg interface{}) {
 	log.Println("Guardian received:", msg)
 }
