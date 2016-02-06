@@ -8,13 +8,13 @@ var _guardian *guardian
 
 func init() {
 	_guardian = &guardian{
-		msgChan: make(chan interface{}),
+		msgChan: make(chan Message),
 	}
 	_guardian.start()
 }
 
 type guardian struct {
-	msgChan chan interface{}
+	msgChan chan Message
 }
 
 func (g *guardian) ActorOf(name string, behavior Behavior) Actor {
@@ -30,7 +30,7 @@ func (g *guardian) Path() Path {
 	return rootPath
 }
 
-func (g *guardian) Send() chan<- interface{} {
+func (g *guardian) Send() chan<- Message {
 	return g.msgChan
 }
 
@@ -59,6 +59,6 @@ func (g *guardian) start() {
 func (g *guardian) restart(_ interface{}) {
 }
 
-func (g *guardian) receive(msg interface{}) {
+func (g *guardian) receive(msg Message) {
 	log.Println("Guardian received:", msg)
 }

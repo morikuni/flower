@@ -7,14 +7,14 @@ type Behavior interface {
 
 type Actor interface {
 	Path() Path
-	Send() chan<- interface{}
+	Send() chan<- Message
 	Monitor(target Actor)
 
 	init()
 	start()
 	restart(reason interface{})
 	stop()
-	receive(msg interface{})
+	receive(msg Message)
 }
 
 type notifyMe struct {
@@ -25,7 +25,7 @@ type actor struct {
 	path     Path
 	behavior Behavior
 	monitors []Actor
-	msgChan  chan interface{}
+	msgChan  chan Message
 	stopChan chan struct{}
 }
 
@@ -33,7 +33,7 @@ func (actor *actor) Path() Path {
 	return actor.path
 }
 
-func (actor *actor) Send() chan<- interface{} {
+func (actor *actor) Send() chan<- Message {
 	return actor.msgChan
 }
 
@@ -84,7 +84,7 @@ func (actor *actor) restart(_ interface{}) {
 	actor.start()
 }
 
-func (actor *actor) receive(msg interface{}) {
+func (actor *actor) receive(msg Message) {
 	if req, ok := msg.(notifyMe); ok {
 		actor.monitors = append(actor.monitors, req.actor)
 		return
@@ -97,7 +97,7 @@ func newActor(name string, behavior Behavior, path Path) *actor {
 		path:     path.join(name),
 		behavior: behavior,
 		monitors: []Actor{},
-		msgChan:  make(chan interface{}),
+		msgChan:  make(chan Message),
 		stopChan: make(chan struct{}),
 	}
 	a.init()
