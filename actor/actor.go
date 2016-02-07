@@ -113,12 +113,13 @@ func (actor *actor) restart(_ interface{}) {
 }
 
 func (actor *actor) receive(msg Message) {
-	if req, ok := msg.(notifyMe); ok {
-		actor.monitors = append(actor.monitors, req.actor)
-		log.Info(actor.path, "notify events to", req.actor.Path())
-		return
+	switch msg := msg.(type) {
+	case notifyMe:
+		actor.monitors = append(actor.monitors, msg.actor)
+		log.Info(actor.path, "notify events to", msg.actor.Path())
+	default:
+		actor.behavior.Receive(actor, msg)
 	}
-	actor.behavior.Receive(actor, msg)
 }
 
 func newActor(name string, behavior Behavior, path Path) *actor {
