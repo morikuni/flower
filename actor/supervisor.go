@@ -2,8 +2,6 @@ package actor
 
 import (
 	"sync"
-
-	"github.com/morikuni/flower/log"
 )
 
 type supervisor struct {
@@ -17,7 +15,6 @@ func (sv *supervisor) Init() {
 func (sv *supervisor) Receive(self Actor, msg interface{}) {
 	switch msg := msg.(type) {
 	case Panic:
-		log.Error(msg.Actor.Path(), "paniced")
 		sv.handlePanic(sv, msg.Actor, msg.Reason)
 	case Supervise:
 		sv.children = append(sv.children, msg.Actors...)
