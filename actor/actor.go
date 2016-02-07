@@ -7,7 +7,7 @@ import (
 
 type Behavior interface {
 	Init()
-	Receive(self Actor, msg interface{})
+	Receive(self Actor, msg Message)
 }
 
 type Actor interface {
