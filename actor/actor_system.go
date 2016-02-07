@@ -34,7 +34,7 @@ func (sys *actorSystem) Shutdown() {
 	sys.Send() <- shutdown{}
 }
 
-func (sys *actorSystem) Init() {
+func (sys *actorSystem) OnRestart(_ interface{}) {
 }
 
 func (sys *actorSystem) Receive(self Actor, msg Message) {

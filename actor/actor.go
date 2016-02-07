@@ -6,7 +6,7 @@ import (
 )
 
 type Behavior interface {
-	Init()
+	OnRestart(reason interface{})
 	Receive(self Actor, msg Message)
 }
 
@@ -15,8 +15,6 @@ type Actor interface {
 	Send() chan<- Message
 	Monitor(target Actor)
 
-	init()
-	start()
 	restart(reason interface{})
 	stop()
 	receive(msg Message)
@@ -58,10 +56,6 @@ func (actor *actor) stop() {
 		actor.stopChan <- struct{}{}
 		<-actor.stoppedChan
 	}
-}
-
-func (actor *actor) init() {
-	actor.behavior.Init()
 }
 
 func (actor *actor) start() {
@@ -107,8 +101,8 @@ func (actor *actor) start() {
 	}()
 }
 
-func (actor *actor) restart(_ interface{}) {
-	actor.init()
+func (actor *actor) restart(reason interface{}) {
+	actor.behavior.OnRestart(reason)
 	actor.start()
 }
 
@@ -131,7 +125,6 @@ func newActor(name string, behavior Behavior, path Path) *actor {
 		stopChan:    make(chan struct{}),
 		stoppedChan: make(chan struct{}),
 	}
-	a.init()
 	a.start()
 	return a
 }

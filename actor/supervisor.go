@@ -9,7 +9,7 @@ type supervisor struct {
 	children    []Actor
 }
 
-func (sv *supervisor) Init() {
+func (sv *supervisor) OnRestart(_ interface{}) {
 }
 
 func (sv *supervisor) Receive(self Actor, msg Message) {
