@@ -102,6 +102,7 @@ func (actor *actor) start() {
 }
 
 func (actor *actor) restart(reason interface{}) {
+	actor.stop()
 	actor.behavior.OnRestart(reason)
 	actor.start()
 }
