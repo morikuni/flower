@@ -4,15 +4,15 @@ import (
 	"log"
 )
 
-type fixedExecutor struct {
+type pooledExecutor struct {
 	taskChan chan<- func()
 }
 
-func (executor *fixedExecutor) Execute(task func()) {
+func (executor *pooledExecutor) Execute(task func()) {
 	executor.taskChan <- task
 }
 
-func (executor *fixedExecutor) Stop() {
+func (executor *pooledExecutor) Stop() {
 	close(executor.taskChan)
 }
 
@@ -24,7 +24,7 @@ func undeadWorker(tc <-chan func()) *worker {
 	})
 }
 
-func NewFixedExecutor(n uint) Executor {
+func NewPooledExecutor(n uint) Executor {
 	tc := make(chan func())
 
 	for i := uint(0); i < n; i++ {
@@ -32,5 +32,5 @@ func NewFixedExecutor(n uint) Executor {
 		go w.run()
 	}
 
-	return &fixedExecutor{tc}
+	return &pooledExecutor{tc}
 }
