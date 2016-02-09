@@ -5,11 +5,6 @@ import (
 	"sync"
 )
 
-type Behavior interface {
-	OnRestart(reason interface{})
-	OnReceive(self Actor, msg Message)
-}
-
 type Actor interface {
 	Path() Path
 	Send() chan<- Message
