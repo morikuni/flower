@@ -7,7 +7,7 @@ import (
 
 type Behavior interface {
 	OnRestart(reason interface{})
-	Receive(self Actor, msg Message)
+	OnReceive(self Actor, msg Message)
 }
 
 type Actor interface {
@@ -113,7 +113,7 @@ func (actor *actor) receive(msg Message) {
 		actor.monitors = append(actor.monitors, msg.actor)
 		log.Info(actor.path, "notify events to", msg.actor.Path())
 	default:
-		actor.behavior.Receive(actor, msg)
+		actor.behavior.OnReceive(actor, msg)
 	}
 }
 

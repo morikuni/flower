@@ -12,7 +12,7 @@ type supervisor struct {
 func (sv *supervisor) OnRestart(_ interface{}) {
 }
 
-func (sv *supervisor) Receive(self Actor, msg Message) {
+func (sv *supervisor) OnReceive(self Actor, msg Message) {
 	switch msg := msg.(type) {
 	case Panic:
 		sv.handlePanic(sv, msg.Actor, msg.Reason)

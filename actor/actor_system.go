@@ -37,7 +37,7 @@ func (sys *actorSystem) Shutdown() {
 func (sys *actorSystem) OnRestart(_ interface{}) {
 }
 
-func (sys *actorSystem) Receive(self Actor, msg Message) {
+func (sys *actorSystem) OnReceive(self Actor, msg Message) {
 	switch msg := msg.(type) {
 	case createRequest:
 		a := newActor(msg.name, msg.behavior, sys.Path())
